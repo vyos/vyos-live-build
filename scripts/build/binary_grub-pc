@@ -24,6 +24,10 @@ Arguments "${@}"
 Read_conffiles config/all config/common config/bootstrap config/chroot config/binary config/source
 Set_defaults
 
+if In_list "${LIVE_IMAGE_TYPE}" hdd netboot; then
+	exit 0
+fi
+
 Check_Any_Bootloader_Role "grub-pc"
 
 Echo_message "Begin installing grub-pc..."

@@ -55,35 +55,19 @@ case "${LB_BINARY_FILESYSTEM}" in
 esac
 
 Check_package chroot /usr/share/doc/mtools mtools
-Check_package chroot /sbin/parted parted
+Check_package chroot /usr/sbin/sgdisk gdisk
 
-echo "${LB_BOOTLOADERS}" | \
-while IFS="," read -r BOOTLOADER
-do
+LB_BOOTLOADERS="$(echo "${LB_BOOTLOADERS}" | tr "," " ")"
+for BOOTLOADER in $LB_BOOTLOADERS; do
 	case "${BOOTLOADER}" in
-		grub)
-			Check_package chroot /usr/sbin/grub grub
+		grub-pc)
+                        GRUB_PC_ENABLED="true"
+			;;
+		grub-efi)
+			EFI_ENABLED="true"
 			;;
 	esac
 done
-
-case ${LB_FIRST_BOOTLOADER} in
-		syslinux)
-			case ${LB_BINARY_FILESYSTEM} in
-				fat*|ntfs)
-					_BOOTLOADER=syslinux
-					;;
-				ext[234]|btrfs)
-					_BOOTLOADER=extlinux
-					;;
-				*)
-					Echo_error "syslinux/extlinux doesn't support ${LB_BINARY_FILESYSTEM}"
-					exit 1
-					;;
-			esac
-			Check_package chroot /usr/bin/${_BOOTLOADER} ${_BOOTLOADER}
-			;;
-esac
 
 # Restoring cache
 Restore_cache cache/packages.binary
@@ -108,7 +92,6 @@ case "${LB_BINARY_FILESYSTEM}" in
 		DU_OPTIONS=""
 		;;
 esac
-
 
 # Enforce fat32 if we find individual files bigger than 2GB
 if [ "${LB_BINARY_FILESYSTEM}" = "fat16" ] && [ -n "$(find binary -size +1999M)" ]
@@ -159,8 +142,6 @@ fi
 echo "!!! The following error/warning messages can be ignored !!!"
 Losetup $FREELO chroot/binary.img 0
 
-PARTITION_TABLE_TYPE="msdos"
-
 case "${LB_BINARY_FILESYSTEM}" in
 	ext2|ext3|ext4)
 		PARTITION_TYPE="ext2"
@@ -182,50 +163,50 @@ esac
 
 case "${LB_BUILD_WITH_CHROOT}" in
 	true)
-		Chroot chroot "parted -s ${FREELO} mklabel ${PARTITION_TABLE_TYPE}" || true
-		if [ "x${LB_HDD_PARTITION_START}" = "x" ];
-		then
-			Chroot chroot "parted -a optimal -s ${FREELO} mkpart primary\
-				${PARTITION_TYPE} 0% 100%" || true
-		else
-			Echo_message "using partition start at ${LB_HDD_PARTITION_START}"
-			Chroot chroot "parted -s ${FREELO} mkpart primary ${PARTITION_TYPE}\
-				${LB_HDD_PARTITION_START} 100%" || true
-		fi
-		Chroot chroot "parted -s ${FREELO} set 1 boot on" || true
-		Chroot chroot "parted -s ${FREELO} set 1 lba off" || true
-
-		if [ "${LB_FIRST_BOOTLOADER}" = "syslinux" ]
-		then
-			dd if=chroot/usr/lib/$(echo ${_BOOTLOADER} | tr [a-z] [A-Z])/mbr.bin of=${FREELO} bs=440 count=1
-		fi
+		Chroot chroot "sgdisk --zap-all ${FREELO}" || true
+                if [ -n "${EFI_ENABLED}" ]
+                then
+			Chroot chroot "sgdisk -a1 -n1:34:2047 -t1:EF02 \
+			        -n2:2048:+256M -t2:EF00 \
+			        -n3:0:0:+100% -t3:8300 ${FREELO}" || true
+                else
+		        if [ "x${LB_HDD_PARTITION_START}" = "x" ];
+		        then
+			        Chroot chroot "sgdisk -a1 -n1:34:2047 -t1:EF02 \
+				        -n2:0:0:+100% -t2:8300 ${FREELO}" || true
+		        else
+			        Echo_message "using partition start at ${LB_HDD_PARTITION_START}"
+			        Chroot chroot "sgdisk -a1 -n1:34:2047 -t1:EF02 \
+				        -n2:${LB_HDD_PARTITION_START}:+100% -t2:8300 ${FREELO}" || true
+		        fi
+                fi
 		;;
 
 	false)
-		parted -s ${FREELO} mklabel ${PARTITION_TABLE_TYPE} || true
-		if [ "x${LB_HDD_PARTITION_START}" = "x" ];
-		then
-			parted -a optimal -s ${FREELO} mkpart primary ${PARTITION_TYPE}\
-				0% 100% || true
-		else
-			Echo_message "using partition start at ${LB_HDD_PARTITION_START}"
-			parted -s ${FREELO} mkpart primary ${PARTITION_TYPE}\
-				${LB_HDD_PARTITION_START} 100% || true
-		fi
-		parted -s "${FREELO}" set 1 boot on || true
-		parted -s "${FREELO}" set 1 lba off || true
-
-		if [ "${LB_FIRST_BOOTLOADER}" = "syslinux" ]
-		then
-			dd if=/usr/lib/$(echo ${_BOOTLOADER} | tr [a-z] [A-Z])/mbr.bin of=${FREELO} bs=440 count=1
-		fi
+		sgdisk --zap-all ${FREELO} || true
+                if [ -n "${EFI_ENABLED}" ]
+                then
+			sgdisk -a1 -n1:34:2047 -t1:EF02 \
+			        -n2:2048:+256M -t2:EF00 \
+			        -n3:0:0:+100% -t3:8300 ${FREELO} || true
+                else
+		        if [ "x${LB_HDD_PARTITION_START}" = "x" ];
+		        then
+			        sgdisk -a1 -n1:34:2047 -t1:EF02 \
+			                -n2:2048:+100% -t2:8300 ${FREELO} || true
+		        else
+			        Echo_message "using partition start at ${LB_HDD_PARTITION_START}"
+			        sgdisk -a1 -n1:34:2047 -t1:EF02 \
+			                -n2:${LB_HDD_PARTITION_START}:+100% -t2:8300 ${FREELO} || true
+		        fi
+                fi
 		;;
 esac
 
 Lodetach ${FREELO}
 
 FREELO="$(${LB_LOSETUP} -f)"
-Losetup $FREELO chroot/binary.img 1
+Losetup $FREELO chroot/binary.img 0
 
 case "${LB_BINARY_FILESYSTEM}" in
 	ext2|ext3|ext4)
@@ -255,11 +236,21 @@ esac
 
 case "${LB_BUILD_WITH_CHROOT}" in
 	true)
-		Chroot chroot "mkfs.${MKFS} ${MKFS_OPTIONS} ${FREELO}"
+                if [ -n "${EFI_ENABLED}" ]
+                then
+	                Chroot chroot "mkfs.${MKFS} ${MKFS_OPTIONS} ${FREELO}p3"
+                else
+		        Chroot chroot "mkfs.${MKFS} ${MKFS_OPTIONS} ${FREELO}p2"
+                fi
 		;;
 
 	false)
-		mkfs.${MKFS} ${MKFS_OPTIONS} ${FREELO}
+                if [ -n "${EFI_ENABLED}" ]
+                then
+        		mkfs.${MKFS} ${MKFS_OPTIONS} ${FREELO}p3
+                else
+	        	mkfs.${MKFS} ${MKFS_OPTIONS} ${FREELO}p2
+                fi
 		;;
 esac
 
@@ -276,62 +267,55 @@ esac
 Echo_message "Copying binary contents into image..."
 
 mkdir -p chroot/binary.tmp
-mount ${MOUNT_OPTIONS} ${FREELO} chroot/binary.tmp
+if [ -n "${EFI_ENABLED}" ]
+then
+        mount ${MOUNT_OPTIONS} ${FREELO}p3 chroot/binary.tmp
+else
+        mount ${MOUNT_OPTIONS} ${FREELO}p2 chroot/binary.tmp
+fi
 cp -T ${CP_OPTIONS} binary/ chroot/binary.tmp
 
-FIXME()
-{
-if [ "${LB_FIRST_BOOTLOADER}" = "grub" ]
+if [ -n "${GRUB_PC_ENABLED}" ]
 then
+        case "${LB_BUILD_WITH_CHROOT}" in
+                true)
+                        Chroot chroot "grub-install --no-floppy --target=i386-pc --root-directory=/binary.tmp ${FREELO} --force"
+                        ;;
 
-cat > chroot/grub.sh << EOF
-cd binary.tmp
-grub --batch << EOM
-find /live/vmlinuz
-EOM
-EOF
-
-	rootpartition="$(Chroot chroot 'sh grub.sh' 2>/dev/null | grep -A 1 'find /live/vmlinuz' | grep -v 'find /live/vmlinuz')"
-	hdddev="$(echo $rootpartition | sed -e 's|,[[:digit:]]||')"
-	echo "Root partition is $rootpartition, device is: $hdddev"
-
-	echo "WAITING..." && read WAIT
-
-#cat > chroot/grub.sh << EOF
-#grub --batch << EOM
-#root $rootpartition
-#setup $hdddev
-#EOM
-#EOF
-
-#Chroot chroot "sh grub.sh"
-
-	rm -f chroot/grub.sh
+                false)
+                        grub-install --no-floppy --target=i386-pc --root-directory=/binary.tmp ${FREELO} --force
+                        ;;
+        esac
 fi
-}
 
-case "${_BOOTLOADER}" in
-	syslinux)
-		_SYSLINUX_INSTALLER="syslinux ${FREELO}"
-		;;
-	extlinux)
-		_SYSLINUX_INSTALLER="extlinux --install /binary.tmp/boot/extlinux"
-		;;
-	*)
-		_SYSLINUX_INSTALLER=""
-		;;
-esac
-
-if [ -n "${_SYSLINUX_INSTALLER}" ]
+if [ -n "${EFI_ENABLED}" ]
 then
-	case "${LB_BUILD_WITH_CHROOT}" in
-		true)
-			Chroot chroot "${_SYSLINUX_INSTALLER}"
-			;;
-		false)
-			${_SYSLINUX_INSTALLER}
-			;;
-	esac
+        MKFSEFI="vfat"
+        MKFSEFI_OPTIONS="-n EFI -F 32 -s 1"
+        MOUNTEFI_OPTIONS=""
+
+        case "${LB_BUILD_WITH_CHROOT}" in
+                true)
+                        Chroot chroot "mkfs.${MKFSEFI} ${MKFSEFI_OPTIONS} ${FREELO}p2"
+                ;;
+                false)
+                        mkfs.${MKFSEFI} ${MKFSEFI_OPTIONS} ${FREELO}p2
+                ;;
+        esac
+        mkdir -p chroot/efi.tmp
+        mount ${MOUNTEFI_OPTIONS} ${FREELO}p2 chroot/efi.tmp
+        case "${LB_BUILD_WITH_CHROOT}" in
+                true)
+                        Chroot chroot "grub-install --no-floppy --recheck --target=x86_64-efi --force-extra-removable --root-directory=/binary.tmp --efi-directory=/efi.tmp --bootloader-id='VyOS' --no-uefi-secure-boot"
+                ;;
+
+                false)
+                        grub-install --no-floppy --recheck --target=x86_64-efi --force-extra-removable --root-directory=/binary.tmp --efi-directory=/efi.tmp --bootloader-id='VyOS' --no-uefi-secure-boot
+                ;;
+                esac
+
+        umount chroot/efi.tmp
+        rmdir chroot/efi.tmp
 fi
 
 umount chroot/binary.tmp
