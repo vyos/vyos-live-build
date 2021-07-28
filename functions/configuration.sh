@@ -782,7 +782,7 @@ Validate_config_dependencies ()
 	fi
 
 	if In_list "grub-pc" ${LB_BOOTLOADERS} || In_list "grub-efi" ${LB_BOOTLOADERS} || In_list "grub-legacy" ${LB_BOOTLOADERS}; then
-		if In_list "${LB_IMAGE_TYPE}" hdd netboot; then
+		if In_list "${LB_IMAGE_TYPE}" netboot; then
 			Echo_error "You have selected an invalid combination of bootloaders and live image type; the grub-* bootloaders are not compatible with hdd and netboot types."
 			exit 1
 		fi
