@@ -304,8 +304,12 @@ Prepare_config ()
 
 	case "${LB_ARCHITECTURE}" in
 		amd64|i386)
-			LB_BOOTLOADER_BIOS="${LB_BOOTLOADER_BIOS:-syslinux}"
-			if ! In_list "${LB_IMAGE_TYPE}" hdd netboot; then
+                        if In_list "${LB_IMAGE_TYPE}" hdd; then
+			        LB_BOOTLOADER_BIOS="${LB_BOOTLOADER_BIOS}"
+                        else
+			        LB_BOOTLOADER_BIOS="${LB_BOOTLOADER_BIOS:-syslinux}"
+                        fi
+			if ! In_list "${LB_IMAGE_TYPE}" netboot; then
 				LB_BOOTLOADER_EFI="${LB_BOOTLOADER_EFI:-grub-efi}"
 			fi
 			;;

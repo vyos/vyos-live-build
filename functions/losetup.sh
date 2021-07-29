@@ -32,7 +32,42 @@ Lodetach ()
 	sync
 	sleep 1
 
-	losetup -d "${DEVICE}" || Lodetach "${DEVICE}" "$(expr ${ATTEMPT} + 1)"
+        if [ "${LB_IMAGE_TYPE}" = "hdd" ];
+        then
+                case "${LB_BUILD_WITH_CHROOT}" in
+                        true)
+                                PARTITIONS=$(lsblk --raw --output "MAJ:MIN" --noheadings "${DEVICE}" | tail -n +2 | sort)
+                                COUNTER=1
+                                for i in $PARTITIONS; do
+                                        if [ -e "chroot/${DEVICE}p${COUNTER}" ]
+                                        then
+                                                Chroot chroot "rm -f ${DEVICE}p${COUNTER}"
+                                        fi
+                                        if [ -e "${DEVICE}p${COUNTER}" ]
+                                        then
+                                                rm -f ${DEVICE}p${COUNTER}
+                                        fi
+                                        COUNTER=$((COUNTER + 1))
+                                done
+                                ;;
+
+                        false)
+                                PARTITIONS=$(lsblk --raw --output "MAJ:MIN" --noheadings "${DEVICE}" | tail -n +2 | sort)
+                                COUNTER=1
+                                for i in $PARTITIONS; do
+                                        if [ -e "${DEVICE}p${COUNTER}" ]
+                                        then
+                                                rm -f ${DEVICE}p${COUNTER}
+                                        fi
+                                        COUNTER=$((COUNTER + 1))
+                                done
+                                ;;
+                esac
+
+
+        fi
+
+        losetup -d "${DEVICE}" || Lodetach "${DEVICE}" "$(expr ${ATTEMPT} + 1)"
 }
 
 Losetup ()
@@ -49,21 +84,59 @@ Losetup ()
 
 	LOOPDEVICE="$(echo ${DEVICE}p${PARTITION})"
 
-	if [ "${PARTITION}" = "0" ]
-	then
+        if [ "${LB_IMAGE_TYPE}" = "hdd" ]
+        then
+                losetup --partscan "${DEVICE}" "${FILE}"
+                case "${LB_BUILD_WITH_CHROOT}" in
+                        true)
+                                PARTITIONS=$(lsblk --raw --output "MAJ:MIN" --noheadings "${DEVICE}" | tail -n +2 | sort)
+                                COUNTER=1
+                                for i in $PARTITIONS; do
+                                        MAJ=$(echo $i | cut -d: -f1)
+                                        MIN=$(echo $i | cut -d: -f2)
+                                        if [ ! -e "chroot/${DEVICE}p${COUNTER}" ]
+                                        then
+                                                Chroot chroot "mknod ${DEVICE}p${COUNTER} b $MAJ $MIN"
+                                        fi
+                                        if [ ! -e "${DEVICE}p${COUNTER}" ]
+                                        then
+                                                mknod ${DEVICE}p${COUNTER} b $MAJ $MIN
+                                        fi
+                                        COUNTER=$((COUNTER + 1))
+                                done
+                                ;;
+        
+                        false)
+                                PARTITIONS=$(lsblk --raw --output "MAJ:MIN" --noheadings "${DEVICE}" | tail -n +2 | sort)
+                                COUNTER=1
+                                for i in $PARTITIONS; do
+                                        MAJ=$(echo $i | cut -d: -f1)
+                                        MIN=$(echo $i | cut -d: -f2)
+                                        if [ ! -e "${DEVICE}p${COUNTER}" ]
+                                        then
+                                                mknod ${DEVICE}p${COUNTER} b $MAJ $MIN
+                                        fi
+                                        COUNTER=$((COUNTER + 1))
+                                done
+                                ;;
+                esac
+        else
+        	if [ "${PARTITION}" = "0" ]
+        	then
 		Echo_message "Mounting %s with offset 0" "${DEVICE}"
 
-		losetup --partscan "${DEVICE}" "${FILE}"
-	else
-		local SECTORS
-		local OFFSET
-		SECTORS="$(echo "$FDISK_OUT" | sed -ne "s|^$LOOPDEVICE[ *]*\([0-9]*\).*|\1|p")"
-		OFFSET="$(expr ${SECTORS} '*' 512)"
+        		losetup --partscan "${DEVICE}" "${FILE}"
+        	else
+        		local SECTORS
+        		local OFFSET
+        		SECTORS="$(echo "$FDISK_OUT" | sed -ne "s|^$LOOPDEVICE[ *]*\([0-9]*\).*|\1|p")"
+        		OFFSET="$(expr ${SECTORS} '*' 512)"
 
-		Echo_message "Mounting %s with offset %s" "${DEVICE}" "${OFFSET}"
+        		Echo_message "Mounting %s with offset %s" "${DEVICE}" "${OFFSET}"
 
-		losetup --partscan -o "${OFFSET}" "${DEVICE}" "${FILE}"
-	fi
+        		losetup --partscan -o "${OFFSET}" "${DEVICE}" "${FILE}"
+        	fi
+        fi
 }
 
 # adapted from lib/ext2fs/mkjournal.c, default block size is 4096 bytes (/etc/mke2fs.conf).

@@ -29,89 +29,43 @@ Require_stagefiles config bootstrap
 
 case "${_ACTION}" in
 	install)
-                if [ "${LB_IMAGE_TYPE}" = "hdd" ]; then
-        		Echo_message "Begin mounting /dev..."
+                Echo_message "Begin mounting /dev/pts..."
 
-        		# Checking stage file
-        		Check_stagefile
+                # Checking stage file
+                Check_stagefile
 
-        		# Acquire lock file
-        		Acquire_lockfile
+                # Acquire lock file
+                Acquire_lockfile
 
-        		# Mounting /dev/pts
-                        mount --bind /dev chroot/dev || true
-        		mount -t devpts -o gid=5,mode=620,x-gvfs-hide devpts-live chroot/dev/pts || true
+                # Creating mountpoint
+                mkdir -p chroot/dev/pts
 
-        		# Creating stage file
-        		Create_stagefile
-                else
-                        Echo_message "Begin mounting /dev/pts..."
+                # Mounting /dev/pts
+                mount -t devpts -o gid=5,mode=620,x-gvfs-hide devpts-live chroot/dev/pts || true
 
-                        # Checking stage file
-                        Check_stagefile
-
-                        # Acquire lock file
-                        Acquire_lockfile
-
-                        # Creating mountpoint
-                        mkdir -p chroot/dev/pts
-
-                        # Mounting /dev/pts
-                        mount -t devpts -o gid=5,mode=620,x-gvfs-hide devpts-live chroot/dev/pts || true
-
-                        # Creating stage file
-                        Create_stagefile
-                fi
+                # Creating stage file
+                Create_stagefile
 		;;
 
 	remove)
-                if [ "${LB_IMAGE_TYPE}" = "hdd" ]; then
-        		Echo_message "Begin unmounting /dev..."
+                Echo_message "Begin unmounting /dev/pts..."
 
-        		# Checking stage file
-        		Ensure_stagefile_exists
+                # Checking stage file
+                Ensure_stagefile_exists
 
-        		# Acquire lock file
-        		Acquire_lockfile
+                # Acquire lock file
+                Acquire_lockfile
 
-        		# Unmounting /dev/pts
-                        if grep -qs "$(pwd)/chroot/dev/pts" /proc/mounts || Find_files chroot/dev/pts/*
-                        then
-                                umount chroot/dev/pts
-                        else
-                                umount -f chroot/dev/pts > /dev/null 2>&1 || true
-                        fi
-
-        		# Unmounting /dev
-        		if grep -qs "$(pwd)/chroot/dev" /proc/mounts || Find_files chroot/dev/*
-        		then
-                                umount chroot/dev
-        		else
-                                umount -f chroot/dev > /dev/null 2>&1 || true
-        		fi
-        
-        		# Removing stage file
-        		Remove_stagefile
+                # Unmounting /dev/pts
+                if grep -qs "$(pwd)/chroot/dev/pts" /proc/mounts || Find_files chroot/dev/pts/*
+                then
+                        umount chroot/dev/pts
                 else
-                        Echo_message "Begin unmounting /dev/pts..."
-
-                        # Checking stage file
-                        Ensure_stagefile_exists
-
-                        # Acquire lock file
-                        Acquire_lockfile
-
-                        # Unmounting /dev/pts
-                        if grep -qs "$(pwd)/chroot/dev/pts" /proc/mounts || Find_files chroot/dev/pts/*
-                        then
-                                umount chroot/dev/pts
-                        else
-                                umount -f chroot/dev/pts > /dev/null 2>&1 || true
-                        fi
-
-                        # Removing stage file
-                        Remove_stagefile
+                        umount -f chroot/dev/pts > /dev/null 2>&1 || true
                 fi
+
+                # Removing stage file
+                Remove_stagefile
 		;;
 
 	*)
