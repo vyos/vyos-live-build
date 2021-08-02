@@ -260,6 +260,17 @@ else
 fi
 cp -T ${CP_OPTIONS} binary/ chroot/binary.tmp
 
+if [ "${LB_VYOS_PERSISTENCE}" = "true" ]
+then
+        mkdir -p chroot/binary.tmp/${LB_VYOS_VERSION}/rw
+        mkdir -p chroot/binary.tmp/${LB_VYOS_VERSION}/work
+        mv chroot/binary.tmp/${LB_VYOS_VERSION}/filesystem.squashfs \
+        chroot/binary.tmp/${LB_VYOS_VERSION}/$(basename ${LB_VYOS_VERSION}).squashfs
+        cat > chroot/binary.tmp/persistence.conf << EOF
+/ union
+EOF
+fi
+
 if [ "${LB_BOOTLOADER_BIOS}" = "grub-pc" ];
 then
         case "${LB_BUILD_WITH_CHROOT}" in

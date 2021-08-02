@@ -75,7 +75,7 @@ Install_packages
 # Setting destination directory
 case "${LB_INITRAMFS}" in
 	live-boot)
-		DESTDIR="binary/live"
+		DESTDIR="binary/${LB_VYOS_VERSION}"
 		;;
 
 	*)

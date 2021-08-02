@@ -388,6 +388,15 @@ Prepare_config ()
 	case "${LB_INITRAMFS}" in
 		live-boot)
 			LB_BOOTAPPEND_LIVE="${LB_BOOTAPPEND_LIVE:-boot=live components quiet splash}"
+			LB_BOOTAPPEND_VYOS_CONSOLE_1="${LB_BOOTAPPEND_VYOS_CONSOLE_1:-none}"
+			LB_BOOTAPPEND_VYOS_CONSOLE_2="${LB_BOOTAPPEND_VYOS_CONSOLE_2:-none}"
+			LB_BOOTAPPEND_VYOS_CONSOLE_3="${LB_BOOTAPPEND_VYOS_CONSOLE_3:-none}"
+			LB_BOOTAPPEND_VYOS_PW_CONSOLE_1="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_1:-none}"
+			LB_BOOTAPPEND_VYOS_PW_CONSOLE_2="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_2:-none}"
+			LB_BOOTAPPEND_VYOS_PW_CONSOLE_3="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_3:-none}"
+			LB_VYOS_CONSOLE_1="${LB_VYOS_CONSOLE_1:-none}"
+			LB_VYOS_CONSOLE_2="${LB_VYOS_CONSOLE_2:-none}"
+			LB_VYOS_CONSOLE_3="${LB_VYOS_CONSOLE_3:-none}"
 			LB_BOOTAPPEND_LIVE_FAILSAFE="${LB_BOOTAPPEND_LIVE_FAILSAFE:-boot=live components memtest noapic noapm nodma nomce nolapic nomodeset nosmp nosplash vga=788}"
 			;;
 
@@ -501,6 +510,9 @@ Prepare_config ()
 	LB_BOOTSTRAP_QEMU_ARCHITECTURE="${LB_BOOTSTRAP_QEMU_ARCHITECTURE:-}"
 	LB_BOOTSTRAP_QEMU_EXCLUDE="${LB_BOOTSTRAP_QEMU_EXCLUDE:-}"
 	LB_BOOTSTRAP_QEMU_STATIC="${LB_BOOTSTRAP_QEMU_STATIC:-}"
+
+        LB_VYOS_VERSION="${LB_VYOS_VERSION:-live}"
+        LB_VYOS_PERSISTENCE="${LB_VYOS_PERSISTENCE:-false}"
 }
 
 Validate_config ()
@@ -709,6 +721,36 @@ Validate_config_permitted_values ()
 		Echo_error "You have specified an invalid value for LB_INITRAMFS (--initramfs)."
 		exit 1
 	fi
+
+        if [ "${LB_BOOTAPPEND_VYOS_CONSOLE_1}" != "none" ] && [ "${LB_VYOS_CONSOLE_1}" = "none" ]; then
+                Echo_error "(--vyos-console-1) is not set."
+                exit 1
+        fi
+
+        if [ "${LB_VYOS_CONSOLE_1}" != "none" ] && [ "${LB_BOOTAPPEND_VYOS_CONSOLE_1}" = "none" ]; then
+                Echo_error "(--bootappend-vyos-console-1) is not set."
+                exit 1
+        fi
+
+        if [ "${LB_BOOTAPPEND_VYOS_CONSOLE_2}" != "none" ] && [ "${LB_VYOS_CONSOLE_2}" = "none" ]; then
+                Echo_error "(--vyos-console-2) is not set."
+                exit 1
+        fi
+
+        if [ "${LB_VYOS_CONSOLE_2}" != "none" ] && [ "${LB_BOOTAPPEND_VYOS_CONSOLE_2}" = "none" ]; then
+                Echo_error "(--bootappend-vyos-console-2) is not set."
+                exit 1
+        fi
+
+        if [ "${LB_BOOTAPPEND_VYOS_CONSOLE_3}" != "none" ] && [ "${LB_VYOS_CONSOLE_3}" = "none" ]; then
+                Echo_error "(--vyos-console-3) is not set."
+                exit 1
+        fi
+
+        if [ "${LB_VYOS_CONSOLE_3}" != "none" ] && [ "${LB_BOOTAPPEND_VYOS_CONSOLE_3}" = "none" ]; then
+                Echo_error "(--bootappend-vyos-console-3) is not set."
+                exit 1
+        fi
 
 	if ! In_list "${LB_INITRAMFS_COMPRESSION}" bzip2 gzip lzma; then
 		Echo_error "You have specified an invalid value for LB_INITRAMFS_COMPRESSION (--initramfs-compression)."

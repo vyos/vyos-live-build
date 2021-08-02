@@ -99,7 +99,7 @@ fi
 
 case "${LB_INITRAMFS}" in
 	live-boot)
-		INITFS="live"
+		INITFS="${LB_VYOS_VERSION}"
 		;;
 
 	*)
@@ -156,6 +156,45 @@ if [ "${_AMD64_686_NUMBER}" -ge 2 ] ; then
 			"/${INITFS}/${_686_INITRD}" \
 			"${LB_BOOTAPPEND_LIVE_FAILSAFE}"
 	fi
+elif [ "${LB_VYOS_VERSION}" != "live" ]; then
+	if [ "${LB_BOOTAPPEND_VYOS_CONSOLE_1}" != "none" ]; then
+                Grub_live_menu_entry "VyOS $(basename ${LB_VYOS_VERSION}) linux (${LB_VYOS_CONSOLE_1} console)" \
+                        "/${INITFS}/${DEFAULT_KERNEL}" \
+                        "/${INITFS}/${DEFAULT_INITRD}" \
+                        "${LB_BOOTAPPEND_VYOS_CONSOLE_1}" \
+                        "l"
+        fi
+        if [ "${LB_BOOTAPPEND_VYOS_CONSOLE_2}" != "none" ]; then
+                Grub_live_menu_entry "VyOS $(basename ${LB_VYOS_VERSION}) linux (${LB_VYOS_CONSOLE_2} console)" \
+                        "/${INITFS}/${DEFAULT_KERNEL}" \
+                        "/${INITFS}/${DEFAULT_INITRD}" \
+                        "${LB_BOOTAPPEND_VYOS_CONSOLE_2}"
+        fi
+        if [ "${LB_BOOTAPPEND_VYOS_CONSOLE_3}" != "none" ]; then
+                Grub_live_menu_entry "VyOS $(basename ${LB_VYOS_VERSION}) linux (${LB_VYOS_CONSOLE_3} console)" \
+                        "/${INITFS}/${DEFAULT_KERNEL}" \
+                        "/${INITFS}/${DEFAULT_INITRD}" \
+                        "${LB_BOOTAPPEND_VYOS_CONSOLE_3}"
+        fi
+        if [ "${LB_BOOTAPPEND_VYOS_PW_CONSOLE_1}" != "none" ]; then
+                Grub_live_menu_entry "Lost password change $(basename ${LB_VYOS_VERSION}) linux (${LB_VYOS_CONSOLE_1} console)" \
+                        "/${INITFS}/${DEFAULT_KERNEL}" \
+                        "/${INITFS}/${DEFAULT_INITRD}" \
+                        "${LB_BOOTAPPEND_VYOS_PW_CONSOLE_1}"
+        fi
+        if [ "${LB_BOOTAPPEND_VYOS_PW_CONSOLE_2}" != "none" ]; then
+                Grub_live_menu_entry "Lost password change $(basename ${LB_VYOS_VERSION}) linux (${LB_VYOS_CONSOLE_2} console)" \
+                        "/${INITFS}/${DEFAULT_KERNEL}" \
+                        "/${INITFS}/${DEFAULT_INITRD}" \
+                        "${LB_BOOTAPPEND_VYOS_PW_CONSOLE_2}"
+        fi
+        if [ "${LB_BOOTAPPEND_VYOS_PW_CONSOLE_3}" != "none" ]; then
+                Grub_live_menu_entry "Lost password change $(basename ${LB_VYOS_VERSION}) linux (${LB_VYOS_CONSOLE_3} console)" \
+                        "/${INITFS}/${DEFAULT_KERNEL}" \
+                        "/${INITFS}/${DEFAULT_INITRD}" \
+                        "${LB_BOOTAPPEND_VYOS_PW_CONSOLE_3}"
+        fi
+
 else
 	Grub_live_menu_entry "Live system" \
 		"/${INITFS}/${DEFAULT_KERNEL}" \
