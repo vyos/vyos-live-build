@@ -31,7 +31,17 @@ USAGE="${PROGRAM}   [--apt apt|aptitude]\n\
 \t    [--binary-filesystem fat16|fat32|ext2|ext3|ext4|ntfs]\n\
 \t    [--bootappend-install PARAMETER|\"PARAMETERS\"]\n\
 \t    [--bootappend-live PARAMETER|\"PARAMETERS\"]\n\
+\t    [--bootappend-vyos-console-1 PARAMETER|\"PARAMETERS\"]\n\
+\t    [--bootappend-vyos-console-2 PARAMETER|\"PARAMETERS\"]\n\
+\t    [--bootappend-vyos-console-3 PARAMETER|\"PARAMETERS\"]\n\
+\t    [--bootappend-vyos-pw-console-1 PARAMETER|\"PARAMETERS\"]\n\
+\t    [--bootappend-vyos-pw-console-2 PARAMETER|\"PARAMETERS\"]\n\
+\t    [--bootappend-vyos-pw-console-3 PARAMETER|\"PARAMETERS\"]\n\
 \t    [--bootappend-live-failsafe PARAMETER|\"PARAMETERS\"]\n\
+\t    [--vyos-console-1 KVM|Serial|USB]\n\
+\t    [--vyos-console-2 KVM|Serial|USB]\n\
+\t    [--vyos-console-3 KVM|Serial|USB]\n\
+\t    [--vyos-persistence true|false]\n\
 \t    [--bootloaders grub-legacy|grub-pc|syslinux|grub-efi]\n\
 \t    [--cache true|false]\n\
 \t    [--cache-indices true|false]\n\
@@ -123,6 +133,7 @@ USAGE="${PROGRAM}   [--apt apt|aptitude]\n\
 \t    [--backports true|false]\n\
 \t    [--verbose]\n\
 \t    [--loadlin true|false]\n\
+\t    [--vyos-version]\n\
 \t    [--win32-loader true|false]\n\
 \t    [--bootstrap-qemu-exclude PACKAGES]\n\
 \t    [--bootstrap-qemu-static PATH]\n\
@@ -144,13 +155,16 @@ Local_arguments ()
 		gzip-options:,image-name:,interactive:,keyring-packages:,linux-flavours:,linux-packages:,
 		security:,updates:,backports:,binary-filesystem:,binary-images:,
 		apt-indices:,bootappend-install:,bootappend-live:,bootappend-live-failsafe:,bootloader:,bootloaders:,checksums:,compression:,config:,zsync:,build-with-chroot:,
+                bootappend-vyos-console-1:,bootappend-vyos-console-2:,bootappend-vyos-console-3:,
+                bootappend-vyos-pw-console-1:,bootappend-vyos-pw-console-2:,bootappend-vyos-pw-console-3:,
+                vyos-console-1:,vyos-console-2:,vyos-console-3:,vyos-persistence:,
 		debian-installer:,debian-installer-distribution:,debian-installer-preseedfile:,debian-installer-gui:,
 		grub-splash:,isohybrid-options:,hdd-label:,hdd-size:,hdd-partition-start:,iso-application:,iso-preparer:,iso-publisher:,
 		iso-volume:,jffs2-eraseblock:,memtest:,net-root-filesystem:,net-root-mountoptions:,
 		net-root-path:,net-root-server:,net-cow-filesystem:,net-cow-mountoptions:,net-cow-path:,
 		net-cow-server:,net-tarball:,onie:,onie-kernel-cmdline:,firmware-binary:,firmware-chroot:,swap-file-path:,swap-file-size:,
 		loadlin:,win32-loader:,source:,source-images:,breakpoints,conffile:,debug,force,
-		help,ignore-system-defaults,quiet,usage,verbose,version,bootstrap-qemu-static:,bootstrap-qemu-arch:,
+		help,ignore-system-defaults,quiet,usage,verbose,version,vyos-version:,bootstrap-qemu-static:,bootstrap-qemu-arch:,
 		uefi-secure-boot:,
 		bootstrap-qemu-exclude:"
 	# Remove spaces added by indentation
@@ -493,8 +507,58 @@ Local_arguments ()
 				shift 2
 				;;
 
+			--bootappend-vyos-console-1)
+				LB_BOOTAPPEND_VYOS_CONSOLE_1="${2}"
+				shift 2
+				;;
+
+			--bootappend-vyos-console-2)
+				LB_BOOTAPPEND_VYOS_CONSOLE_2="${2}"
+				shift 2
+				;;
+
+			--bootappend-vyos-console-3)
+				LB_BOOTAPPEND_VYOS_CONSOLE_3="${2}"
+				shift 2
+				;;
+
+			--bootappend-vyos-pw-console-1)
+				LB_BOOTAPPEND_VYOS_PW_CONSOLE_1="${2}"
+				shift 2
+				;;
+
+			--bootappend-vyos-pw-console-2)
+				LB_BOOTAPPEND_VYOS_PW_CONSOLE_2="${2}"
+				shift 2
+				;;
+
+			--bootappend-vyos-pw-console-3)
+				LB_BOOTAPPEND_VYOS_PW_CONSOLE_3="${2}"
+				shift 2
+				;;
+
 			--bootappend-live-failsafe)
 				LB_BOOTAPPEND_LIVE_FAILSAFE="${2}"
+				shift 2
+				;;
+
+			--vyos-console-1)
+				LB_VYOS_CONSOLE_1="${2}"
+				shift 2
+				;;
+
+			--vyos-console-2)
+				LB_VYOS_CONSOLE_2="${2}"
+				shift 2
+				;;
+
+			--vyos-console-3)
+				LB_VYOS_CONSOLE_3="${2}"
+				shift 2
+				;;
+
+			--vyos-persistence)
+				LB_VYOS_PERSISTENCE="${2}"
 				shift 2
 				;;
 
@@ -697,6 +761,11 @@ Local_arguments ()
 				LB_LOADLIN="${2}"
 				shift 2
 				;;
+
+                        --vyos-version)
+                                LB_VYOS_VERSION="boot/${2}"
+                                shift 2
+                                ;;
 
 			--win32-loader)
 				LB_WIN32_LOADER="${2}"
@@ -1174,6 +1243,36 @@ LB_APT_INDICES="${LB_APT_INDICES}"
 # (Default: empty)
 LB_BOOTAPPEND_LIVE="${LB_BOOTAPPEND_LIVE}"
 
+# Set boot parameters
+LB_BOOTAPPEND_VYOS_CONSOLE_1="${LB_BOOTAPPEND_VYOS_CONSOLE_1}"
+
+# Set boot parameters
+LB_BOOTAPPEND_VYOS_CONSOLE_2="${LB_BOOTAPPEND_VYOS_CONSOLE_2}"
+
+# Set boot parameters
+LB_BOOTAPPEND_VYOS_CONSOLE_3="${LB_BOOTAPPEND_VYOS_CONSOLE_3}"
+
+# Set boot parameters
+LB_BOOTAPPEND_VYOS_PW_CONSOLE_1="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_1}"
+
+# Set boot parameters
+LB_BOOTAPPEND_VYOS_PW_CONSOLE_2="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_2}"
+
+# Set boot parameters
+LB_BOOTAPPEND_VYOS_PW_CONSOLE_3="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_3}"
+
+# Set console
+LB_VYOS_CONSOLE_1="${LB_VYOS_CONSOLE_1}"
+
+# Set console
+LB_VYOS_CONSOLE_2="${LB_VYOS_CONSOLE_2}"
+
+# Set console
+LB_VYOS_CONSOLE_3="${LB_VYOS_CONSOLE_3}"
+
+# Set VyOS presistence
+LB_VYOS_PERSISTENCE="${LB_VYOS_PERSISTENCE}"
+
 # \$LB_BOOTAPPEND_INSTALL: set boot parameters
 # (Default: empty)
 LB_BOOTAPPEND_INSTALL="${LB_BOOTAPPEND_INSTALL}"
@@ -1262,6 +1361,9 @@ LB_MEMTEST="${LB_MEMTEST}"
 # \$LB_LOADLIN: set loadlin
 # (Default: ${LB_LOADLIN})
 LB_LOADLIN="${LB_LOADLIN}"
+
+# Set VyOS version
+LB_VYOS_VERSION="${LB_VYOS_VERSION}"
 
 # \$LB_WIN32_LOADER: set win32-loader
 # (Default: ${LB_WIN32_LOADER})

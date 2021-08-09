@@ -31,7 +31,7 @@ Lodetach ()
 	sync
 	sleep 1
 
-        if [ "${LB_IMAGE_TYPE}" = "hdd" ];
+        if [ "${LIVE_IMAGE_TYPE}" = "hdd" ];
         then
                 case "${LB_BUILD_WITH_CHROOT}" in
                         true)
@@ -79,7 +79,7 @@ Losetup ()
 
 	LOOPDEVICE="$(echo ${DEVICE}p${PARTITION})"
 
-        if [ "${LB_IMAGE_TYPE}" = "hdd" ]
+        if [ "${LIVE_IMAGE_TYPE}" = "hdd" ]
         then
                 losetup --partscan "${DEVICE}" "${FILE}"
                 case "${LB_BUILD_WITH_CHROOT}" in

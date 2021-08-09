@@ -595,6 +595,15 @@ Set_defaults ()
 	case "${LB_INITRAMFS}" in
 		live-boot)
 			LB_BOOTAPPEND_LIVE="${LB_BOOTAPPEND_LIVE:-boot=live components quiet splash}"
+        		LB_BOOTAPPEND_VYOS_CONSOLE_1="${LB_BOOTAPPEND_VYOS_CONSOLE_1:-none}"
+			LB_BOOTAPPEND_VYOS_CONSOLE_2="${LB_BOOTAPPEND_VYOS_CONSOLE_2:-none}"
+			LB_BOOTAPPEND_VYOS_CONSOLE_3="${LB_BOOTAPPEND_VYOS_CONSOLE_3:-none}"
+			LB_BOOTAPPEND_VYOS_PW_CONSOLE_1="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_1:-none}"
+			LB_BOOTAPPEND_VYOS_PW_CONSOLE_2="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_2:-none}"
+			LB_BOOTAPPEND_VYOS_PW_CONSOLE_3="${LB_BOOTAPPEND_VYOS_PW_CONSOLE_3:-none}"
+			LB_VYOS_CONSOLE_1="${LB_VYOS_CONSOLE_1:-none}"
+			LB_VYOS_CONSOLE_2="${LB_VYOS_CONSOLE_2:-none}"
+			LB_VYOS_CONSOLE_3="${LB_VYOS_CONSOLE_3:-none}"
 			LB_BOOTAPPEND_LIVE_FAILSAFE="${LB_BOOTAPPEND_LIVE_FAILSAFE:-boot=live components memtest noapic noapm nodma nomce nolapic nomodeset nosmp nosplash vga=normal}"
 			;;
 
@@ -869,5 +878,8 @@ Check_defaults ()
 
 	# Ports using foreign bootstrap need a working qemu-*-system. This is the location it
 	LB_BOOTSTRAP_QEMU_STATIC="${LB_BOOTSTRAP_QEMU_STATIC:-}"
+
+        LB_VYOS_VERSION="${LB_VYOS_VERSION:-live}"
+        LB_VYOS_PERSISTENCE="${LB_VYOS_PERSISTENCE:-false}"
 
 }

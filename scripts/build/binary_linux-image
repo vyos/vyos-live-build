@@ -45,7 +45,7 @@ Create_lockfile .lock
 
 case "${LB_INITRAMFS}" in
 	live-boot)
-		DESTDIR="binary/live"
+		DESTDIR="binary/${LB_VYOS_VERSION}"
 		;;
 
 	*)

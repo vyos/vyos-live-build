@@ -127,7 +127,7 @@ fi
 
 case "${LB_INITRAMFS}" in
 	live-boot)
-		INITFS="live"
+		INITFS="${LB_VYOS_VERSION}"
 		;;
 
 	*)
@@ -140,7 +140,7 @@ case "${LIVE_IMAGE_TYPE}" in
 	iso*|tar)
 		case "${LB_INITRAMFS}" in
 			live-boot)
-				DESTDIR_LIVE="binary/live"
+				DESTDIR="binary/${LB_VYOS_VERSION}"
 				;;
 
 			*)
