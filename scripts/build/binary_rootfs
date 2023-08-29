@@ -321,6 +321,8 @@ case "${LB_CHROOT_FILESYSTEM}" in
 				fi
 
 				# Create image
+				Echo_message "Using: nice -n 17 mksquashfs chroot filesystem.squashfs ${MKSQUASHFS_OPTIONS}"
+				
 				Chroot chroot "nice -n 17 mksquashfs chroot filesystem.squashfs ${MKSQUASHFS_OPTIONS}"
 
 				rm -f chroot/excludes
