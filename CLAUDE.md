@@ -43,5 +43,5 @@ Mirror twin: `VyOS-Networks/vyos-live-build`. Mirror pipeline not confirmed live
 ## Notes for future contributors
 - This is a vendor fork. **Keep VyOS-specific deltas minimal and clearly attributed** so periodic resync with Debian upstream remains tractable.
 - ISO behavior changes that look like `live-build` bugs are often package-set issues handled by `vyos-build`; check there first before patching here.
-- No GitHub Actions workflows are currently configured in this repo (at the time of the most recent shallow clone), so CI verification happens implicitly via `vyos-build`'s smoketest.
+- One GitHub Actions workflow is configured: a CLA check (`cla-check.yml`) that runs on pull requests via `vyos/vyos-cla-signatures`. Functional CI verification happens implicitly via `vyos-build`'s smoketest.
 - When bumping `live-build` from upstream Debian, expect cascading regressions in `vyos-build` ISO assembly — coordinate.
