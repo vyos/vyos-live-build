@@ -45,7 +45,3 @@ Mirror twin: `VyOS-Networks/vyos-live-build`. Mirror pipeline not confirmed live
 - ISO behavior changes that look like `live-build` bugs are often package-set issues handled by `vyos-build`; check there first before patching here.
 - No GitHub Actions workflows are currently configured in this repo (at the time of the most recent shallow clone), so CI verification happens implicitly via `vyos-build`'s smoketest.
 - When bumping `live-build` from upstream Debian, expect cascading regressions in `vyos-build` ISO assembly — coordinate.
-
----
-
-This file is mirrored on Confluence: [`vyos/vyos-live-build`](https://internal.confluence.vyos.com/wiki/spaces/VYOS/pages/818544949). The Confluence page also carries the per-repo audit data (settings, workflows, secret counts, hygiene) that complements this CLAUDE.md. Edit either side; resync via the documentation pipeline.
