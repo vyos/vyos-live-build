@@ -34,7 +34,7 @@ No standalone test suite — exercised end-to-end by `vyos-build`'s ISO assembly
 ## Conventions
 - Commit/PR title: `component: T12345: description` (Phorge task ID at https://vyos.dev) where applicable.
 - License: GPLv3 (inherited from Debian `live-build`).
-- Maintain the upstream vendor field in `debian/control` (`Maintainer: Debian Live <debian-live@lists.debian.org>` + VyOS uploaders) — keeps the Debian heritage transparent.
+- Maintain the upstream vendor field in `debian/control` (`Maintainer: Debian Live <debian-live@lists.debian.org>`) — keeps the Debian heritage transparent. Do not replace it with VyOS-specific maintainer info.
 - Default branch: confirm via `git ls-remote --symref`; LTS-train branches may carry train-specific patches.
 
 ## Mirror relationship
