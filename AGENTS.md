@@ -29,16 +29,11 @@ No standalone test suite — exercised end-to-end by `vyos-build`'s ISO assembly
 
 ## Cross-repo context
 - Consumed by `vyos/vyos-build` at ISO assembly time. `vyos-build` invokes `lb config`/`lb build` inside its build container after dropping the `vyos-live-build` `.deb` in.
-- Listed indirectly in the VyOS image build chain. Not in `VyOS-Networks/vyos-build-packages/repos.toml`'s 14-package list (which is the Debian source-package set baked into VyOS itself), but is a build-time dependency of the ISO toolchain.
-
 ## Conventions
 - Commit/PR title: `component: T12345: description` (Phorge task ID at https://vyos.dev) where applicable.
 - License: GPLv3 (inherited from Debian `live-build`).
 - Maintain the upstream vendor field in `debian/control` (`Maintainer: Debian Live <debian-live@lists.debian.org>`) — keeps the Debian heritage transparent. Do not replace it with VyOS-specific maintainer info.
 - Default branch: confirm via `git ls-remote --symref`; LTS-train branches may carry train-specific patches.
-
-## Mirror relationship
-Mirror twin: `VyOS-Networks/vyos-live-build`. Mirror pipeline not confirmed live for this repo. Treat `vyos/*` as canonical.
 
 ## Notes for future contributors
 - This is a vendor fork. **Keep VyOS-specific deltas minimal and clearly attributed** so periodic resync with Debian upstream remains tractable.
