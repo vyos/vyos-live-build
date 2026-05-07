@@ -9,7 +9,7 @@ VyOS fork of Debian's [`live-build`](https://wiki.debian.org/DebianLive) — the
 
 ## Build / test / run
 ```
-dpkg-buildpackage -uc -us -tc -b      # build the live-build .deb
+dpkg-buildpackage -uc -us -tc -b      # build the live-build.deb
 # Direct toolchain invocation usually goes through vyos/vyos-build's docker image,
 # which installs this package and calls `lb config`/`lb build`.
 ```
